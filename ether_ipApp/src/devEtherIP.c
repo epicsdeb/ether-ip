@@ -26,6 +26,7 @@
 #include <link.h>
 #include <dbScan.h>
 #include <menuConvert.h>
+#include <dbCommon.h>
 #include <aiRecord.h>
 #include <biRecord.h>
 #include <mbbiRecord.h>
@@ -179,7 +180,7 @@ static eip_bool check_data(const dbCommon *rec)
  * 1) NOBT might change but MASK is only set once
  * 2) MASK doesn't help when reading bits accross UDINT boundaries
  */
-static eip_bool get_bits(dbCommon *rec, size_t bits, unsigned long *rval)
+static eip_bool get_bits(dbCommon *rec, size_t bits, epicsUInt32 *rval)
 {
     DevicePrivate  *pvt = (DevicePrivate *)rec->dpvt;
     size_t         i, element = pvt->element;
@@ -374,8 +375,8 @@ static void check_ao_callback(void *arg)
             if (!rec->udf  &&  pvt->special & SPCO_FORCE)
             {
                 if (rec->tpro)
-                    printf("AO '%s': will re-write record's rval 0x%X\n",
-                           rec->name, (unsigned int)rec->rval);
+                    printf("AO '%s': will re-write record's rval %#X\n",
+                           rec->name, (unsigned int) rec->rval);
             }
             else
             {
@@ -414,7 +415,7 @@ static void check_ao_callback(void *arg)
     dbScanUnlock((dbCommon *)rec);
     /* Does record need processing and is not periodic? */
     if (process && rec->scan < SCAN_1ST_PERIODIC)
-        scanOnce(rec);
+        scanOnce((dbCommon *)rec);
 }
 
 /* Callback for bo, see ao_callback comments */
@@ -423,7 +424,7 @@ static void check_bo_callback(void *arg)
     boRecord      *rec = (boRecord *) arg;
     struct rset   *rset= (struct rset *)(rec->rset);
     DevicePrivate *pvt = (DevicePrivate *)rec->dpvt;
-    unsigned long rval;
+    epicsUInt32   rval;
     eip_bool      process = false;
 
     /* We are about the check and even set val, & rval -> lock */
@@ -445,12 +446,12 @@ static void check_bo_callback(void *arg)
         (rec->udf || rec->sevr == INVALID_ALARM || rec->rval != rval))
     {
         if (rec->tpro)
-            printf("'%s': got %lu from driver\n", rec->name, rval);
+            printf("'%s': got %lu from driver\n", rec->name, (unsigned long) rval);
         if (!rec->udf  &&  pvt->special & SPCO_FORCE)
         {
             if (rec->tpro)
                 printf("'%s': will re-write record's value %u\n",
-                       rec->name, (unsigned int)rec->val);
+                       rec->name, (unsigned int) rec->val);
         }
         else
         {   /* back-convert rval into val */
@@ -459,14 +460,14 @@ static void check_bo_callback(void *arg)
             rec->udf = false;
             if (rec->tpro)
                 printf("'%s': updated record to tag, val = %u\n",
-                       rec->name, (unsigned int)rec->val);
+                       rec->name, (unsigned int) rec->val);
         }
         process = true;
     }
     dbScanUnlock((dbCommon *)rec);
     /* Does record need processing and is not periodic? */
     if (process && rec->scan < SCAN_1ST_PERIODIC)
-        scanOnce(rec);
+        scanOnce((dbCommon *)rec);
 }
 
 /* Callback for mbbo */
@@ -475,7 +476,7 @@ static void check_mbbo_callback(void *arg)
     mbboRecord    *rec = (mbboRecord *) arg;
     struct rset   *rset= (struct rset *)(rec->rset);
     DevicePrivate *pvt = (DevicePrivate *)rec->dpvt;
-    unsigned long rval, *state_val;
+    epicsUInt32   rval, *state_val;
     size_t        i;
     eip_bool      process = false;
 
@@ -498,12 +499,12 @@ static void check_mbbo_callback(void *arg)
         (rec->udf || rec->sevr == INVALID_ALARM || rec->rval != rval))
     {
         if (rec->tpro)
-            printf("'%s': got %lu from driver\n", rec->name, rval);
+            printf("'%s': got %lu from driver\n", rec->name, (unsigned long) rval);
         if (!rec->udf  &&  pvt->special & SPCO_FORCE)
         {
             if (rec->tpro)
-                printf("'%s': will re-write record's rval 0x%X\n",
-                       rec->name, (unsigned int)rec->rval);
+                printf("'%s': will re-write record's rval %#X\n",
+                       rec->name, (unsigned int) rec->rval);
         }
         else
         {   /* back-convert rval into val */
@@ -529,14 +530,14 @@ static void check_mbbo_callback(void *arg)
                 rec->udf = false;
             }
             if (rec->tpro)
-                printf("--> val = %u\n", (unsigned int)rec->val);
+                printf("--> val = %u\n", (unsigned int) rec->val);
         }
         process = true;
     }
     dbScanUnlock((dbCommon *)rec);
     /* Does record need processing and is not periodic? */
     if (process && rec->scan < SCAN_1ST_PERIODIC)
-        scanOnce (rec);
+        scanOnce((dbCommon *)rec);
 }
 
 /* Callback for mbboDirect */
@@ -545,7 +546,7 @@ static void check_mbbo_direct_callback(void *arg)
     mbboDirectRecord *rec = (mbboDirectRecord *) arg;
     struct rset      *rset= (struct rset *)(rec->rset);
     DevicePrivate    *pvt = (DevicePrivate *)rec->dpvt;
-    unsigned long    rval;
+    epicsUInt32      rval;
     eip_bool         process = false;
 
     /* We are about the check and even set val, & rval -> lock */
@@ -568,12 +569,12 @@ static void check_mbbo_direct_callback(void *arg)
     {
         if (rec->tpro)
             printf("'%s': got %lu from driver\n",
-                   rec->name, rval);
+                   rec->name, (unsigned long) rval);
         if (!rec->udf  &&  pvt->special & SPCO_FORCE)
         {
             if (rec->tpro)
-                printf("'%s': re-write record's rval 0x%X\n",
-                       rec->name, (unsigned int)rec->rval);
+                printf("'%s': re-write record's rval %#X\n",
+                       rec->name, (unsigned int) rec->rval);
         }
         else
         {
@@ -586,7 +587,7 @@ static void check_mbbo_direct_callback(void *arg)
     dbScanUnlock((dbCommon *)rec);
     /* Does record need processing and is not periodic? */
     if (process && rec->scan < SCAN_1ST_PERIODIC)
-        scanOnce(rec);
+        scanOnce((dbCommon *)rec);
 }
 
 /* device support routine get_ioint_info */
@@ -1424,7 +1425,7 @@ static long bo_write(boRecord *rec)
 {
     DevicePrivate *pvt = (DevicePrivate *)rec->dpvt;
     long          status;
-    unsigned long rval;
+    epicsUInt32   rval;
     eip_bool      ok = true;
 
     if (rec->pact)
@@ -1449,7 +1450,7 @@ static long bo_write(boRecord *rec)
             if (rec->rval != rval)
             {
                 if (rec->tpro)
-                    printf("'%s': write %lu\n", rec->name, rec->rval);
+                    printf("'%s': write %lu\n", rec->name, (unsigned long) rec->rval);
                 ok = put_bits((dbCommon *)rec, 1, rec->rval);
                 if (pvt->tag->do_write)
                     EIP_printf(6,"'%s': already writing\n", rec->name);
@@ -1473,7 +1474,7 @@ static long mbbo_write (mbboRecord *rec)
 {
     DevicePrivate *pvt = (DevicePrivate *)rec->dpvt;
     long          status;
-    unsigned long rval;
+    epicsUInt32   rval;
     eip_bool      ok = true;
 
     if (rec->pact)
@@ -1497,7 +1498,7 @@ static long mbbo_write (mbboRecord *rec)
         if (get_bits((dbCommon *)rec, rec->nobt, &rval) && rec->rval != rval)
         {
             if (rec->tpro)
-                printf("'%s': write %lu\n", rec->name, rec->rval);
+                printf("'%s': write %lu\n", rec->name, (unsigned long) rec->rval);
             ok = put_bits((dbCommon *)rec, rec->nobt, rec->rval);
             if (pvt->tag->do_write)
                 EIP_printf(6,"'%s': already writing\n", rec->name);
@@ -1520,7 +1521,7 @@ static long mbbo_direct_write (mbboDirectRecord *rec)
 {
     DevicePrivate *pvt = (DevicePrivate *)rec->dpvt;
     long          status;
-    unsigned long rval;
+    epicsUInt32   rval;
     eip_bool      ok = true;
 
     if (rec->pact)
@@ -1544,7 +1545,7 @@ static long mbbo_direct_write (mbboDirectRecord *rec)
         if (get_bits((dbCommon *)rec, rec->nobt, &rval)  &&  rec->rval != rval)
         {
             if (rec->tpro)
-                printf("'%s': write %lu\n", rec->name, rec->rval);
+                printf("'%s': write %lu\n", rec->name, (unsigned long) rec->rval);
             ok = put_bits((dbCommon *)rec, rec->nobt, rec->rval);
             if (pvt->tag->do_write)
                 EIP_printf(6,"'%s': already writing\n", rec->name);
