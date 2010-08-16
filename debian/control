@@ -1,0 +1,49 @@
+Source: ether-ip
+Section: devel
+Priority: extra
+Maintainer: Ralph Lange <rlange@bnl.gov>
+Build-Depends: debhelper (>= 7),
+               epics-dev (>= 3.14.10-10),
+               epics-msi,
+Standards-Version: 3.8.0
+Homepage: http://ics-web.sns.ornl.gov/kasemir/etherip/
+
+
+Package: libether-ip2.19
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: epics-ether-ip (= ${source:Version})
+Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
+ EPICS Driver/Device Support module that interfaces
+ Allen Bradley ControlLogix 5000 PLCs and maybe also
+ Compact Logix devices (see www.ab.com) via Ethernet
+ to EPICS IOCs.
+ .
+ This package provides shared libraries.
+
+Package: epics-ether-ip
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
+ EPICS Driver/Device Support module that interfaces
+ Allen Bradley ControlLogix 5000 PLCs and maybe also
+ Compact Logix devices (see www.ab.com) via Ethernet
+ to EPICS IOCs.
+ .
+ This package provides the database files
+ needed by an IOC using the ether-ip support.
+
+Package: epics-ether-ip-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libether-ip2.19 (= ${binary:Version}),
+         epics-ether-ip (= ${source:Version})
+Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
+ EPICS Driver/Device Support module that interfaces
+ Allen Bradley ControlLogix 5000 PLCs and maybe also
+ Compact Logix devices (see www.ab.com) via Ethernet
+ to EPICS IOCs.
+ .
+ This package provides files needed to build an
+ IOC with the ether-ip support.

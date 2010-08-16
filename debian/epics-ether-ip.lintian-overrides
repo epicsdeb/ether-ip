@@ -1,0 +1,2 @@
+epics-ether-ip: non-standard-dir-in-usr usr/epics/
+epics-ether-ip: file-in-unusual-dir
