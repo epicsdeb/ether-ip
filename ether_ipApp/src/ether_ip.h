@@ -1,5 +1,18 @@
-/* $Id: ether_ip.h,v 1.25 2009/06/01 14:25:49 kasemir Exp $
- *
+/*************************************************************************\
+* Copyright (c) 2001 - 2004 The Regents of the University of California,
+*     as Operator of Los Alamos National Laboratory.
+* Copyright (c) 2004 - 2009  Oak Ridge National Laboratory,
+*     Oak Ridge, Tennessee 37831, U.S.A
+* All rights reserved. Subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution.
+\*************************************************************************/
+
+/*
+ *  Original Author: Kay-Uwe Kasemir <kasemirk@ornl.gov>,
+ *  RTEMS/OSI Port : Stephanie Allison <saa@slac.stanford.edu>
+ */
+
+/*
  * ether_ip
  *
  * EtherNet/IP routines for Win32, Unix, vxWorks, and RTEMS.
@@ -10,7 +23,6 @@
  * Docs:  "Spec" = ControlNet Spec. version 2.0, Errata 1
  *        "ENET" = AB Publication 1756-RM005A-EN-E
  *
- * kasemir@lanl.gov
  */
 
 #ifndef NO_EPICS
