@@ -5,7 +5,7 @@ ifdef EPICS_HOST_ARCH
 include $(TOP)/configure/CONFIG
 DIRS := $(DIRS) $(filter-out $(DIRS), configure)
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard ether_ipApp))
-DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard testether_ipApp))
+#DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard testether_ipApp))
 #DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard *App))
 #DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard *app))
 DIRS := $(DIRS) $(filter-out $(DIRS), $(wildcard *iocBoot))
@@ -18,7 +18,7 @@ include $(TOP)/config/CONFIG_APP
 DIRS += ether_ipApp
 DIRS += config
 #DIRS += $(wildcard *App)
-DIRS += testether_ipApp
+#DIRS += testether_ipApp
 DIRS += $(wildcard *app)
 DIRS += $(wildcard iocBoot)
 DIRS += $(wildcard iocboot)
