@@ -1,2 +1,3 @@
+usr/epics/base/dbd/ether_ip.dbd
 usr/epics/base/lib/linux-*/lib*.so
 usr/epics/base/lib/linux-*/lib*.a
