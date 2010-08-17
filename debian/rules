@@ -10,7 +10,6 @@ SOV=$(shell echo "$(DEB_NOEPOCH_VERSION)"| cut -f 1 -d '-')
 
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
-
 DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
 TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
 
@@ -40,7 +39,7 @@ clean:
 
 	dh clean --after auto_clean
 
-libname=ether-ip
+libname=ether_ip
 prefix=debian/tmp/usr
 epicsdir=$(prefix)/epics/base
 epicslibdir=$(epicsdir)/lib/$(EPICS_HOST_ARCH)
@@ -55,10 +54,6 @@ install-stamp:
 	mv $(epicslibdir)/lib$(libname).so.$(SOV) $(prefix)/lib/
 	rm -f $(epicslibdir)/lib$(libname).so
 	ln -s ../../../lib/lib$(libname).so.$(SOV) $(epicslibdir)/lib$(libname).so
-
-	# Install any autosave request files provided
-	#install -m 644 -t debian/epics-ether-ip/usr/epics/base/as/req \
-	#debian/ioc_stats_settings.req
 
 	dh install --after auto_install
 	touch $@
