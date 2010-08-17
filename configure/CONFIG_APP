@@ -15,3 +15,5 @@ endif
 
 # dbst based database optimization (default: NO)
 DB_OPT = NO
+
+USR_LDFLAGS += -Wl,--as-needed
