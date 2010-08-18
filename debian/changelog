@@ -1,3 +1,9 @@
+ether-ip (2.19-3) unstable; urgency=low
+
+  * Removed Recommends: to deleted -nodev package
+
+ -- Ralph Lange <rlange@bnl.gov>  Wed, 18 Aug 2010 11:47:35 -0400
+
 ether-ip (2.19-2) unstable; urgency=low
 
   * Fixed soft link for libraries in -dev package.

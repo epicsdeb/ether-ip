@@ -13,7 +13,6 @@ Package: libether-ip2.19
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: epics-ether-ip (= ${source:Version})
 Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
  EPICS Driver/Device Support module that interfaces
  Allen Bradley ControlLogix 5000 PLCs and maybe also
