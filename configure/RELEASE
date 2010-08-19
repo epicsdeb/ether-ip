@@ -9,4 +9,4 @@
 
 # EPICS_BASE usually appears last so other apps can override stuff:
 
-EPICS_BASE=/usr/epics/base
+EPICS_BASE=/usr/lib/epics
