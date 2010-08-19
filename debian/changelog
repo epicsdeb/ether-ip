@@ -1,3 +1,9 @@
+ether-ip (2.19-4) unstable; urgency=low
+
+  * Install in /usr/lib/epics
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 19 Aug 2010 12:12:58 -0400
+
 ether-ip (2.19-3) unstable; urgency=low
 
   * Removed Recommends: to deleted -nodev package
