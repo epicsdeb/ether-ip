@@ -1,4 +1,4 @@
--*- outline -*- $Id: readme.txt,v 1.29 2009/06/01 14:25:49 kasemir Exp $
+-*- outline -*- $Id$
 
 * This document
 is part of the EPICS EtherIP package, to be found in

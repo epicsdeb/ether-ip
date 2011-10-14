@@ -1,4 +1,4 @@
-/* $Id: drvEtherIP.c,v 1.45 2009/09/01 21:21:04 kasemir Exp $
+/* $Id: drvEtherIP.c,v 1.14 2011/04/12 18:08:48 saa Exp $
  *
  * drvEtherIP
  *
@@ -21,6 +21,10 @@
 #ifdef HAVE_314_API
 /* Base */
 #include "epicsExport.h"
+#include "initHooks.h"
+
+/* See drvEtherIP_initHook() */
+static int databaseIsReady = false;
 #endif
 
 double drvEtherIP_default_rate = 0.0;
@@ -90,11 +94,11 @@ DrvEtherIP_Private drvEtherIP_private = { {NULL, NULL}, 0 };
 static void dump_TagInfo(const TagInfo *info, int level)
 {
     char buffer[EIP_MAX_TAG_LENGTH];
-    printf("*** Tag '%s' @ 0x%X:\n", info->string_tag, (unsigned int)info);
+    printf("*** Tag '%s' @ 0x%lX:\n", info->string_tag, (unsigned long)info);
     if (level > 3)
     {
-        printf("  scanlist            : 0x%X\n",
-               (unsigned int)info->scanlist);
+        printf("  scanlist            : 0x%lX\n",
+               (unsigned long)info->scanlist);
         EIP_copy_ParsedTag(buffer, info->tag);
         printf("  compiled tag        : '%s', %d elements\n",
         	   buffer, (unsigned)info->elements);
@@ -102,8 +106,8 @@ static void dump_TagInfo(const TagInfo *info, int level)
         	   (unsigned)info->cip_r_request_size, (unsigned)info->cip_r_response_size);
         printf("  cip write req./resp.: %u / %u\n",
         	   (unsigned)info->cip_w_request_size, (unsigned)info->cip_w_response_size);
-        printf("  data_lock ID        : 0x%X\n",
-               (unsigned int) info->data_lock);
+        printf("  data_lock ID        : 0x%lX\n",
+               (unsigned long) info->data_lock);
     }
     if (epicsMutexLock(info->data_lock) == epicsMutexLockOK)
     {
@@ -222,8 +226,8 @@ static void dump_ScanList(const ScanList *list, int level)
 {
     const TagInfo *info;
     char      tsString[50];
-    printf("Scanlist %g secs @ 0x%X:\n",
-           list->period, (unsigned int)list);
+    printf("Scanlist %g secs @ 0x%lX:\n",
+           list->period, (unsigned long)list);
     printf("  Status        : %s\n",
            (list->enabled ? "enabled" : "DISABLED"));
     epicsTimeToStrftime(tsString, sizeof(tsString),
@@ -629,7 +633,7 @@ static eip_bool process_ScanList(EIPConnection *c, ScanList *scanlist)
 {
     TagInfo             *info, *info_position;
     size_t              count, requests_size, responses_size;
-    size_t              multi_request_size, multi_response_size;
+    size_t              multi_request_size = 0, multi_response_size = 0;
     size_t              send_size, i, elements;
     CN_USINT            *send_request, *multi_request, *request;
     const CN_USINT      *response, *single_response, *data;
@@ -1041,6 +1045,7 @@ void drvEtherIP_help()
     printf("\n");
 }
 
+/* Public, also driver's report routine */
 long drvEtherIP_report(int level)
 {
     PLC *plc;
@@ -1063,8 +1068,8 @@ long drvEtherIP_report(int level)
         return 0;
     }
     if (level > 1)
-        printf("  Mutex lock: 0x%X\n",
-               (unsigned int) drvEtherIP_private.lock);
+        printf("  Mutex lock: 0x%lX\n",
+               (unsigned long) drvEtherIP_private.lock);
     for (plc = DLL_first(PLC,&drvEtherIP_private.PLCs);
          plc;  plc = DLL_next(PLC,plc))
     {
@@ -1084,10 +1089,10 @@ long drvEtherIP_report(int level)
         }
         if (level > 2)
         {
-            printf("  Mutex lock            : 0x%X\n",
-                   (unsigned int)plc->lock);
-            printf("  scan task ID          : 0x%X (%s)\n",
-                   (unsigned int) plc->scan_task_id,
+            printf("  Mutex lock            : 0x%lX\n",
+                   (unsigned long)plc->lock);
+            printf("  scan task ID          : 0x%lX (%s)\n",
+                   (unsigned long) plc->scan_task_id,
                    (plc->scan_task_id==0 ? "-dead-" :
 #ifdef HAVE_314_API
                     epicsThreadIsSuspended(plc->scan_task_id)!=0 ? "suspended":
@@ -1293,6 +1298,7 @@ void drvEtherIP_remove_callback (PLC *plc, TagInfo *info,
     epicsMutexUnlock(plc->lock);
 }
 
+
 /* (Re-)connect to IOC,
  * (Re-)start scan tasks, one per PLC.
  * Returns number of tasks spawned.
@@ -1306,6 +1312,23 @@ int drvEtherIP_restart()
 
     if (drvEtherIP_private.lock == 0) return 0;
     epicsMutexLock(drvEtherIP_private.lock);
+
+#ifdef HAVE_314_API
+    if (!databaseIsReady) {
+        epicsMutexUnlock(drvEtherIP_private.lock);
+        for (plc = DLL_first(PLC,&drvEtherIP_private.PLCs);
+             plc;  plc = DLL_next(PLC,plc))
+        {
+            if (plc->name)
+            {
+                EIP_printf(4, "drvEtherIP: Delaying launch of scan task for PLC '%s' until database ready\n",
+                   plc->name);
+            }
+        }
+        return 0;
+    }
+#endif
+
     for (plc = DLL_first(PLC,&drvEtherIP_private.PLCs);
          plc;  plc = DLL_next(PLC,plc))
     {
@@ -1386,17 +1409,55 @@ int drvEtherIP_read_tag(const char *ip_addr,
     return 0;
 }
 
+
+/* Jeff Hill noticed that driver could invoke for example ao record callbacks,
+ * i.e. call scanOnce() on a record, while the IOC is still starting up
+ * and the "onceQ" ring buffer is not initalized.
+ *
+ * drvEtherIP_restart will therefore not perform anything until the database
+ * is available as indicated by the init hook setting databaseIsReady
+ */
+#ifdef HAVE_314_API
+void drvEtherIP_initHook ( initHookState state )
+{
+    if (drvEtherIP_private.lock == 0) return;
+    if ( state == initHookAfterScanInit ) {
+        epicsMutexLock(drvEtherIP_private.lock);
+        databaseIsReady = true;
+        epicsMutexUnlock(drvEtherIP_private.lock);
+        drvEtherIP_restart();
+    }
+}
+#endif
+
+static long drvEtherIP_drvInit ()
+{
+    /*
+     * astonished to discover that initHookRegister is
+     * in initHooks.h in R3.13, but not in iocCore
+     * object file in R3.13
+     */
+#ifdef HAVE_314_API
+    int status = initHookRegister ( drvEtherIP_initHook );
+    if ( status ) {
+        errlogPrintf (
+              "drvEtherIP_drvInit: init hook install failed\n" );
+    }
+#endif
+    return 0;
+}
+
 /* EPICS driver support entry table */
 struct
 {
     long number;
     long (* report) ();
-    long (* inie) ();
+    long (* init) ();
 } drvEtherIP =
 {
     2,
     drvEtherIP_report,
-    NULL
+    drvEtherIP_drvInit
 };
 
 #ifdef HAVE_314_API

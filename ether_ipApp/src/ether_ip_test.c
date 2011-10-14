@@ -1,4 +1,4 @@
-/* $Id: ether_ip_test.c,v 1.15 2009/06/01 14:25:49 kasemir Exp $
+/* $Id$
  *
  * EtherNet/IP: ControlNet over Ethernet
  *

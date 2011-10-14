@@ -1,4 +1,4 @@
-/* $Id: R314Compat.h,v 1.3 2004/03/17 22:24:15 kasemir Exp $
+/* $Id$
  *
  * R314Compat.h
  *
