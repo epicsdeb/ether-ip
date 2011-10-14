@@ -42,6 +42,8 @@
 /* Local */
 #include"ether_ip.h"
 
+#define socket_close close
+
 int EIP_buffer_limit =  EIP_DEFAULT_BUFFER_LIMIT;
 
 static const CN_UINT __endian_test = 0x0001;

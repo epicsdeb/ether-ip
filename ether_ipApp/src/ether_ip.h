@@ -110,6 +110,8 @@ typedef int               EIP_SOCKET;
 
 #include "eip_bool.h"
 
+#include <osiSock.h>
+
 /* This could be an application on its own...
  * Rough idea:
  * 10: Dump all protocol details
