@@ -1,5 +1,18 @@
-/* $Id: ether_ip.c,v 1.10 2011/04/12 18:08:48 saa Exp $
- *
+/*************************************************************************\
+* Copyright (c) 2001 - 2004 The Regents of the University of California,
+*     as Operator of Los Alamos National Laboratory.
+* Copyright (c) 2004 - 2009  Oak Ridge National Laboratory,
+*     Oak Ridge, Tennessee 37831, U.S.A
+* All rights reserved. Subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution.
+\*************************************************************************/
+
+/*
+ *  Original Author: Kay-Uwe Kasemir <kasemirk@ornl.gov>,
+ *  RTEMS/OSI Port : Stephanie Allison <saa@slac.stanford.edu>
+ */
+
+/*
  * ether_ip
  *
  * EtherNet/IP routines for Win32, Unix, vxWorks, and RTEMS.
@@ -10,7 +23,6 @@
  * Docs:  "Spec" = ControlNet Spec. version 2.0, Errata 1
  *        "ENET" = AB Publication 1756-RM005A-EN-E
  *
- * kasemir@lanl.gov
  */
 
 /* System */
@@ -26,7 +38,6 @@
 
 /* EPICS */
 #include<epicsTime.h>
-#include<osiSock.h>
 
 /* Local */
 #include"ether_ip.h"
@@ -1008,7 +1019,7 @@ void dump_raw_CIP_data(const CN_USINT *raw_type_and_data, size_t elements)
             for (i=0; i<elements; ++i)
             {
                 buf = unpack_UDINT(buf, &vd);
-                EIP_printf(0, " 0x%08X", vd);
+                EIP_printf(0, " 0x%08X", (unsigned int)vd);
             }
             break;
         case T_CIP_STRUCT:
@@ -1562,7 +1573,7 @@ const CN_USINT *get_CIP_MultiRequest_Response (const CN_USINT *response,
     if (reply_no >= count)
         return 0;
     unpack_UINT (offsetp + 2*reply_no, &offset);
-    EIP_printf(10, "MultiRequest reply at offset 0x%X: ", offset);
+    EIP_printf(10, "MultiRequest reply at offset 0x%X: ", (unsigned int) offset);
     mem = countp + offset;
     if (reply_size)
     {
@@ -1592,16 +1603,16 @@ void EIP_dump_connection (const EIPConnection *c)
     printf ("    SOCKET          : %d\n", c->sock);
     printf ("    buffer_limit    : %u\n", (unsigned int)c->transfer_buffer_limit);
     printf ("    millisec_timeout: %u\n", (unsigned int)c->millisec_timeout);
-    printf ("    CN_UDINT session: 0x%08X\n", c->session);
-    printf ("    buffer location : 0x%lX\n", (unsigned long)c->buffer);
+    printf ("    CN_UDINT session: 0x%08lX\n", c->session);
+    printf ("    buffer location : 0x%08lX\n", (unsigned long)c->buffer);
     printf ("    buffer size     : %u\n", (unsigned int)EIP_BUFFER_SIZE);
 }
 
 /* set socket to non-blocking */
-static void set_nonblock (EIP_SOCKET s, eip_bool nonblock)
+static void set_nonblock (SOCKET s, eip_bool nonblock)
 {
     int yesno = nonblock;
-    EIP_socket_ioctl(s, FIONBIO, &yesno);
+    socket_ioctl(s, FIONBIO, &yesno);
 }
 
 #ifndef vxWorks
@@ -1611,7 +1622,7 @@ static void set_nonblock (EIP_SOCKET s, eip_bool nonblock)
  *
  * Return codea ala vxWorks: OK == 0, ERROR == -1
  */
-static int connectWithTimeout (EIP_SOCKET s, const struct sockaddr *addr,
+static int connectWithTimeout (SOCKET s, const struct sockaddr *addr,
                                int addr_size,
                                struct timeval *timeout)
 {
@@ -1621,8 +1632,8 @@ static int connectWithTimeout (EIP_SOCKET s, const struct sockaddr *addr,
     set_nonblock (s, true);
     if (connect (s, addr, addr_size) < 0)
     {
-        error = EIP_SOCKERRNO;
-        if (error == EIP_SOCK_EWOULDBLOCK || error == EIP_SOCK_EINPROGRESS)
+        error = SOCKERRNO;
+        if (error == SOCK_EWOULDBLOCK || error == SOCK_EINPROGRESS)
         {
             /* Wait for connection until timeout:
              * success is reported in writefds */
@@ -1637,6 +1648,20 @@ static int connectWithTimeout (EIP_SOCKET s, const struct sockaddr *addr,
     set_nonblock (s, false);
 
     return 0;
+}
+
+/*
+ * NOTE: base/src/libCom/osi/os/<arch>/osdSock.c defines hostToIPAddr which
+ * could be used by EIP_connect instead.
+ */
+static unsigned long hostGetByName (const char *ip_addr)
+{
+    struct hostent *hostent;
+
+    hostent = gethostbyname (ip_addr);
+    if (!hostent)
+        return -1;
+    return *((unsigned long *) hostent->h_addr);
 }
 
 #endif
@@ -1677,6 +1702,7 @@ eip_bool EIP_connect(EIPConnection *c,
 {
     struct sockaddr_in addr;
     struct timeval timeout;
+    unsigned long *addr_p;
     int flag = true;
 
     c->transfer_buffer_limit = EIP_buffer_limit;
@@ -1689,16 +1715,27 @@ eip_bool EIP_connect(EIPConnection *c,
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
     addr.sin_port = htons (port);
-    if(hostToIPAddr(ip_addr, &addr.sin_addr) < 0) {
+#ifdef _WIN32
+    addr_p = &addr.sin_addr.S_un.S_addr;
+#else
+    addr_p =(unsigned long *) &addr.sin_addr.s_addr;
+#endif
+    *addr_p = inet_addr((char *)ip_addr);
+    if (*addr_p == -1)
+    {   /* ... or DNS */
+        *addr_p = hostGetByName ((char *)ip_addr);
+        if (*addr_p == -1)
+        {
             EIP_printf (2, "EIP cannot find IP for '%s'\n",
                         ip_addr);
             return false;
-    }    
+        }
+    }
     if (c->sock != 0)
         EIP_printf (2, "EIP_connect found open socket\n");
     /* Create socket and set it to no-delay */
     c->sock = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (c->sock == EIP_INVALID_SOCKET)
+    if (c->sock == INVALID_SOCKET)
     {
         EIP_printf (2, "EIP cannot create socket\n");
         c->sock = 0;
@@ -1708,7 +1745,7 @@ eip_bool EIP_connect(EIPConnection *c,
                    (char *) &flag, sizeof ( flag )) < 0)
     {
         EIP_printf(2, "EIP cannot set socket option to TCP_NODELAY\n");
-        EIP_socket_close(c->sock);
+        socket_close(c->sock);
         c->sock = 0;
         return false;
     }
@@ -1718,7 +1755,7 @@ eip_bool EIP_connect(EIPConnection *c,
                            sizeof (addr), &timeout) != 0)
     {
         EIP_printf (3, "EIP cannot connect to %s:0x%04X\n", ip_addr, port);
-        EIP_socket_close (c->sock);
+        socket_close (c->sock);
         c->sock = 0;
         return false;
     }
@@ -1731,7 +1768,7 @@ static void EIP_disconnect (EIPConnection *c)
 {
     EIP_printf (9, "EIP disconnecting socket %d\n", c->sock);
 
-    EIP_socket_close (c->sock);
+    socket_close (c->sock);
     c->sock = 0;
 }
 

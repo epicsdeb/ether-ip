@@ -1,11 +1,14 @@
+/*************************************************************************\
+* Copyright (c) 2008 UChicago Argonne LLC, as Operator of Argonne
+*     National Laboratory.
+* Copyright (c) 2003 The Regents of the University of California, as
+*     Operator of Los Alamos National Laboratory.
+* EPICS BASE is distributed subject to the Software License Agreement
+* found in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+
 /* ether_ip_testMain.c */
 /* Author:  Marty Kraimer Date:    17MAR2000 */
-
-/********************COPYRIGHT NOTIFICATION**********************************
-This software was developed under a United States Government license
-described on the COPYRIGHT_UniversityOfChicago file included as part
-of this distribution.
-****************************************************************************/
 
 #include <stddef.h>
 #include <stdlib.h>

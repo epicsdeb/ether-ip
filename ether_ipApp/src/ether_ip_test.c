@@ -1,10 +1,22 @@
-/* $Id$
- *
+/*************************************************************************\
+* Copyright (c) 2001 - 2004 The Regents of the University of California,
+*     as Operator of Los Alamos National Laboratory.
+* Copyright (c) 2004 - 2009  Oak Ridge National Laboratory,
+*     Oak Ridge, Tennessee 37831, U.S.A
+* All rights reserved. Subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution.
+\*************************************************************************/
+
+/*
+ *  Original Author: Kay-Uwe Kasemir <kasemirk@ornl.gov>,
+ *  RTEMS/OSI Port : Stephanie Allison <saa@slac.stanford.edu>
+ */
+
+/*
  * EtherNet/IP: ControlNet over Ethernet
  *
  * Test program for hosts.
  *
- * kasemir@lanl.gov
  */
 
 #include<memory.h>
