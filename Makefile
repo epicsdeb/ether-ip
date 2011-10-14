@@ -8,7 +8,7 @@ DIRS := configure
 DIRS += ether_ipApp
 ether_ipApp_DEPEND_DIRS = configure
 
-DIRS += testether_ipApp
+#DIRS += testether_ipApp
 testether_ipApp_DEPEND_DIRS = ether_ipApp
 
 DIRS += iocBoot
