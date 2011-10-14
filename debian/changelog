@@ -1,3 +1,9 @@
+ether-ip (2.23-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Fri, 14 Oct 2011 10:45:28 -0400
+
 ether-ip (2.19-4) unstable; urgency=low
 
   * Install in /usr/lib/epics
