@@ -1,0 +1,24 @@
+ether-ip (2.19-4) unstable; urgency=low
+
+  * Install in /usr/lib/epics
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 19 Aug 2010 12:12:58 -0400
+
+ether-ip (2.19-3) unstable; urgency=low
+
+  * Removed Recommends: to deleted -nodev package
+
+ -- Ralph Lange <rlange@bnl.gov>  Wed, 18 Aug 2010 11:47:35 -0400
+
+ether-ip (2.19-2) unstable; urgency=low
+
+  * Fixed soft link for libraries in -dev package.
+  * Added missing -debug shared library in -dev package.
+
+ -- Ralph Lange <rlange@bnl.gov>  Tue, 17 Aug 2010 16:22:01 -0400
+
+ether-ip (2.19-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Ralph Lange <rlange@bnl.gov>  Fri, 13 Aug 2010 15:40:09 -0400
