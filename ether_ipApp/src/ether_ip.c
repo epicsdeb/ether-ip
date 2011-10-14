@@ -1605,7 +1605,7 @@ void EIP_dump_connection (const EIPConnection *c)
     printf ("    SOCKET          : %d\n", c->sock);
     printf ("    buffer_limit    : %u\n", (unsigned int)c->transfer_buffer_limit);
     printf ("    millisec_timeout: %u\n", (unsigned int)c->millisec_timeout);
-    printf ("    CN_UDINT session: 0x%08lX\n", c->session);
+    printf ("    CN_UDINT session: 0x%08lX\n", (unsigned long)c->session);
     printf ("    buffer location : 0x%08lX\n", (unsigned long)c->buffer);
     printf ("    buffer size     : %u\n", (unsigned int)EIP_BUFFER_SIZE);
 }
