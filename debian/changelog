@@ -1,3 +1,10 @@
+ether-ip (2.23-2) unstable; urgency=low
+
+  * Fix for problem with writing individual (non-array) 'BOOL' tags
+    provided by David Dudley
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Tue, 18 Oct 2011 16:08:51 -0400
+
 ether-ip (2.23-1) unstable; urgency=low
 
   * New upstream version
