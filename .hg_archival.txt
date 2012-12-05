@@ -1,0 +1,4 @@
+repo: 0448e31008f15398a3143ca8e7f2a700f5fbb5e0
+node: 55a92726fd75eaa6215d3aa26a09f64eb77b9556
+branch: default
+tag: ether_ip-2-24-1
