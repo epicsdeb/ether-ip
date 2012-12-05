@@ -9,7 +9,7 @@ Standards-Version: 3.8.0
 Homepage: http://ics-web.sns.ornl.gov/kasemir/etherip/
 
 
-Package: libether-ip2.19
+Package: libether-ip2.24
 Architecture: any
 Section: libs
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -24,7 +24,7 @@ Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
 Package: epics-ether-ip-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         libether-ip2.19 (= ${binary:Version}),
+         libether-ip2.24 (= ${binary:Version}),
 Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
  EPICS Driver/Device Support module that interfaces
  Allen Bradley ControlLogix 5000 PLCs and maybe also
