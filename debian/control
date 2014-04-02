@@ -1,7 +1,7 @@
 Source: ether-ip
 Section: devel
 Priority: extra
-Maintainer: Ralph Lange <rlange@bnl.gov>, Michael Davidsaver <mdavidsaver@bnl.gov>
+Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7),
                epics-dev (>= 3.14.11-2),
                epics-msi,
