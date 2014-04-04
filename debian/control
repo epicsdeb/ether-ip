@@ -2,7 +2,7 @@ Source: ether-ip
 Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
-Build-Depends: debhelper (>= 7),
+Build-Depends: debhelper (>= 7.0.50),
                epics-dev (>= 3.14.11-2),
                epics-msi,
 Standards-Version: 3.8.0
@@ -20,6 +20,19 @@ Description: EPICS Driver for AB ControlLogix 5000 PLCs via EtherNet/IP
  to EPICS IOCs.
  .
  This package provides shared libraries.
+
+Package: libether-ip2.24-dbg
+Architecture: any
+Section: debug
+Depends: libether-ip2.24 (= ${binary:Version}),
+         ${misc:Depends}
+Description: EPICS Driver for PLCs via EtherNet/IP (debug symbols)
+ EPICS Driver/Device Support module that interfaces
+ Allen Bradley ControlLogix 5000 PLCs and maybe also
+ Compact Logix devices (see www.ab.com) via Ethernet
+ to EPICS IOCs.
+ .
+ Debug symbols for ether-ip device support.
 
 Package: epics-ether-ip-dev
 Architecture: any
