@@ -65,3 +65,6 @@ binary-indep: install
 	dh binary-indep
 
 binary: binary-arch binary-indep
+
+override_dh_strip:
+	dh_strip --dbg-package=libether-ip2.24-dbg
